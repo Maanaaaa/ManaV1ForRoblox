@@ -9,5 +9,14 @@ Discontinued for some time (~1 week) for some reasons:
 
 I'll be working on full script remake until next friday 
 ```
-
+Already done features:
+```
+FovChanger
+DayTime
+NoAnimation
+ClickTP
+Gravity
+CustomCrossHair
+Better GuiLibrary + GuiLibrary Optimization (30%)
+```
 Discord: https://discord.gg/gPkD8BdbMA
