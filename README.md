@@ -17,6 +17,8 @@ NoAnimation
 ClickTP
 Gravity
 CustomCrossHair
-Better GuiLibrary + GuiLibrary Optimization (30%)
+LongJump
+HightJump (90%)
+Better GuiLibrary + GuiLibrary Optimization (40%)
 ```
 Discord: https://discord.gg/gPkD8BdbMA
