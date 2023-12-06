@@ -11,14 +11,7 @@ I'll be working on full script remake until next friday
 ```
 Already done features:
 ```
-FovChanger
-DayTime
-NoAnimation
-ClickTP
-Gravity
-CustomCrossHair
-LongJump
-HightJump (90%)
 Better GuiLibrary + GuiLibrary Optimization (40%)
++ 9 more features
 ```
 Discord: https://discord.gg/gPkD8BdbMA
