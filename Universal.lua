@@ -358,18 +358,6 @@ noAnimate.MouseButton1Click:Connect(function()
 	end
 end)
 
-local dayTime = createButton(Render, "DayTime")
-
-dayTime.MouseButton1Click:Connect(function()
-	if dayTime.BackgroundColor3 == Color3.fromRGB(255, 140, 120) then
-		dayTime.BackgroundColor3 = Color3.fromRGB(120, 255, 156)
-		lighting.TimeOfDay = gameTime
-	elseif dayTime.BackgroundColor3 == Color3.fromRGB(120, 255, 156) then
-		dayTime.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
-		lighting.TimeOfDay = oldGameTime..":00:00" or "12:00:00"
-	end
-end)
-
 --Utility tab
 
 local fpsUnlock = createButton(Utility, "FPS Unlocker")
