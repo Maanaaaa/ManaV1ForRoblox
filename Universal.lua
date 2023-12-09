@@ -1,209 +1,395 @@
 --[[
     New and simple gui library + script for lvl 2 executors that doesn't have hpttget function
-    Everything until main code part is gui library so you can use it if you want
+    Everything until the main code part is a gui library, so you can use it if you want
+
 
     Made by Mana
 ]]
 
---Settings
+-- Settings
+local guiKeybind = Enum.KeyCode.N
+
+local clickTPmode = "tool" -- click, tool
+local clickTPkey = Enum.KeyCode.V
+local gravity = 196.19999694824
 local speedValue = 100
 local jumpPowerValue = 100
+local mouseIcon = 7767269282 -- old roblox mouse icon
+local chatSpammerMessage = ""
+local chatSpammerDelay = "" -- time between every message (1 - 1 second, 0.1 - 0.1 second, and etc..)
+local fov = 70
+local gameTime = 5 -- hour of day (night - 0, 1, 2 | day - 12, 14 and etc..)
+local longJumpBoost = 50
+
+local plr = game.Players.LocalPlayer
+local plrgui = plr.PlayerGui
+local plrpack = plr.Backpack
+local character = plr.Character
+local animate = character:WaitForChild("Animate")
+local hmd = character.Humanoid
+local camera = workspace.CurrentCamera
+local mouse = plr:GetMouse()
+local oldSpeed = hmd.WalkSpeed
+local oldJumpPower = hmd.JumpPower
+local oldMouseIcon = mouse.Icon
+local oldCameraMaxZoom = camera.MaxAxisFieldOfView
+local lighting = game:GetService("Lighting")
+local input = game:GetService("UserInputService")
+local starterGui = game:GetService("StarterGui")
+local oldGameTime = lighting.TimeOfDay
+local bindable = Instance.new("BindableFunction")
+local mouseConnection
+local longJumpChange
+
+-- anti multiple load
+
+function createNotificationB(title, text, duration, buttons)
+	starterGui:SetCore("SendNotification", {
+		Title = title,
+		Text = text,
+		Duration = duration,
+		Callback = bindable,
+		Button1 = "Yes",
+		Button2 = "No",
+	})
+end
+
+function createNotification(title, text, duration)
+	starterGui:SetCore("SendNotification", {
+		Title = title,
+		Text = text,
+		Duration = duration,
+	})
+end
+
+if plrgui:FindFirstChild("Level2ExecLib") then
+	createNotification("ManaV1ForRoblox", "Already loaded, not loading again.", 15)
+end
 
 -- GuiLibrary
 
-local Level2ExecLib = Instance.new("ScreenGui")
-local Blatant = Instance.new("Frame")
-local BlatantTitle = Instance.new("TextLabel")
-local UIListLayout = Instance.new("UIListLayout")
-local Render = Instance.new("Frame")
-local RenderTitle = Instance.new("TextLabel")
-local UIListLayout_2 = Instance.new("UIListLayout")
-local Utility = Instance.new("Frame")
-local UtilityTitle = Instance.new("TextLabel")
-local UIListLayout_3 = Instance.new("UIListLayout")
-local Info = Instance.new("Frame")
-local InfoTitle = Instance.new("TextLabel")
-local UIListLayout_4 = Instance.new("UIListLayout")
+local level2ExecLib = Instance.new("ScreenGui", plrgui)
+level2ExecLib.Name = "Level2ExecLib"
+level2ExecLib.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-Level2ExecLib.Name = "Level2ExecLib"
-Level2ExecLib.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-Level2ExecLib.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+local tabsFrame = Instance.new("Frame", level2ExecLib)
+local uiList = Instance.new("UIListLayout", tabsFrame)
 
-Blatant.Name = "Blatant"
-Blatant.Parent = Level2ExecLib
-Blatant.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Blatant.BackgroundTransparency = 0.900
-Blatant.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Blatant.BorderSizePixel = 0
-Blatant.Position = UDim2.new(0.0466926061, 0, 0.0713153705, 0)
-Blatant.Size = UDim2.new(0, 150, 0, 300)
+tabsFrame.Name = "Tabs"
+tabsFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+tabsFrame.BackgroundTransparency = 1.000
+tabsFrame.BorderSizePixel = 0
+tabsFrame.Position = UDim2.new(0.010, 0,0.010, 0)
+tabsFrame.Size = UDim2.new(0, 207, 0, 40)
+tabsFrame.AutomaticSize = "X"
 
-BlatantTitle.Name = "BlatantTitle"
-BlatantTitle.Parent = Blatant
-BlatantTitle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-BlatantTitle.BackgroundTransparency = 0.500
-BlatantTitle.BorderColor3 = Color3.fromRGB(0, 0, 0)
-BlatantTitle.BorderSizePixel = 0
-BlatantTitle.Size = UDim2.new(0, 150, 0, 25)
-BlatantTitle.Font = Enum.Font.Arial
-BlatantTitle.Text = "Blatant"
-BlatantTitle.TextColor3 = Color3.fromRGB(0, 0, 0)
-BlatantTitle.TextSize = 14.000
+uiList.FillDirection = Enum.FillDirection.Horizontal
+uiList.SortOrder = Enum.SortOrder.LayoutOrder
+uiList.Padding = UDim.new(0, 40)
 
-UIListLayout.Parent = Blatant
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+input.InputBegan:Connect(function(keybutton)
+	if keybutton.KeyCode == guiKeybind then
+		tabsFrame.Visible = not tabsFrame.Visible
+	end
+end)
 
-Render.Name = "Render"
-Render.Parent = Level2ExecLib
-Render.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Render.BackgroundTransparency = 0.900
-Render.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Render.BorderSizePixel = 0
-Render.Position = UDim2.new(0.178988323, 0, 0.0713153705, 0)
-Render.Size = UDim2.new(0, 150, 0, 300)
+function createTab(parent, name)
+	local tab = Instance.new("Frame", parent)
+	local tabTitle = Instance.new("TextLabel", tab)
+	local tabLayout = Instance.new("UIListLayout", tab)
 
-RenderTitle.Name = "RenderTitle"
-RenderTitle.Parent = Render
-RenderTitle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-RenderTitle.BackgroundTransparency = 0.500
-RenderTitle.BorderColor3 = Color3.fromRGB(0, 0, 0)
-RenderTitle.BorderSizePixel = 0
-RenderTitle.Size = UDim2.new(0, 150, 0, 25)
-RenderTitle.Font = Enum.Font.Arial
-RenderTitle.Text = "Render"
-RenderTitle.TextColor3 = Color3.fromRGB(0, 0, 0)
-RenderTitle.TextSize = 14.000
+	tab.Name = name
+	tab.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	tab.BackgroundTransparency = 0.900
+	tab.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	tab.BorderSizePixel = 0
+	tab.Size = UDim2.new(0, 160, 0, 300)
 
-UIListLayout_2.Parent = Render
-UIListLayout_2.SortOrder = Enum.SortOrder.LayoutOrder
+	tabTitle.Name = name
+	tabTitle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	tabTitle.BackgroundTransparency = 0.500
+	tabTitle.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	tabTitle.BorderSizePixel = 0
+	tabTitle.Size = UDim2.new(0, 160, 0, 25)
+	tabTitle.Font = Enum.Font.Arial
+	tabTitle.Text = name
+	tabTitle.TextColor3 = Color3.fromRGB(0, 0, 0)
+	tabTitle.TextSize = 14.000
 
-Utility.Name = "Utility"
-Utility.Parent = Level2ExecLib
-Utility.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Utility.BackgroundTransparency = 0.900
-Utility.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Utility.BorderSizePixel = 0
-Utility.Position = UDim2.new(0.310505837, 0, 0.0713153705, 0)
-Utility.Size = UDim2.new(0, 150, 0, 300)
+	tabLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-UtilityTitle.Name = "UtilityTitle"
-UtilityTitle.Parent = Utility
-UtilityTitle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-UtilityTitle.BackgroundTransparency = 0.500
-UtilityTitle.BorderColor3 = Color3.fromRGB(0, 0, 0)
-UtilityTitle.BorderSizePixel = 0
-UtilityTitle.Size = UDim2.new(0, 150, 0, 25)
-UtilityTitle.Font = Enum.Font.Arial
-UtilityTitle.Text = "Utility"
-UtilityTitle.TextColor3 = Color3.fromRGB(0, 0, 0)
-UtilityTitle.TextSize = 14.000
-
-UIListLayout_3.Parent = Utility
-UIListLayout_3.SortOrder = Enum.SortOrder.LayoutOrder
-
-Info.Name = "Info"
-Info.Parent = Level2ExecLib
-Info.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Info.BackgroundTransparency = 0.900
-Info.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Info.BorderSizePixel = 0
-Info.Position = UDim2.new(0.443579763, 0, 0.0713153705, 0)
-Info.Size = UDim2.new(0, 150, 0, 300)
-
-InfoTitle.Name = "InfoTitle"
-InfoTitle.Parent = Info
-InfoTitle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-InfoTitle.BackgroundTransparency = 0.500
-InfoTitle.BorderColor3 = Color3.fromRGB(0, 0, 0)
-InfoTitle.BorderSizePixel = 0
-InfoTitle.Size = UDim2.new(0, 150, 0, 25)
-InfoTitle.Font = Enum.Font.Arial
-InfoTitle.Text = "Info"
-InfoTitle.TextColor3 = Color3.fromRGB(0, 0, 0)
-InfoTitle.TextSize = 14.000
-
-UIListLayout_4.Parent = Info
-UIListLayout_4.SortOrder = Enum.SortOrder.LayoutOrder
-
-function createButton(tab, name)
-    local button = Instance.new("TextButton")
-    local divider = Instance.new("Frame")
-
-    button.Name = "Button"  -- Fix typo: changed "Button" to "button"
-    button.Parent = tab or Blatant  -- Fix typo: changed "or Blatant" to "or Blatant"
-    button.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
-    button.BackgroundTransparency = 0.300
-    button.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    button.BorderSizePixel = 0
-    button.Position = UDim2.new(0, 0, 0.0833333358, 0)
-    button.Size = UDim2.new(0, 150, 0, 30)
-    button.Font = Enum.Font.Arial
-    button.Text = name or "button"
-    button.TextColor3 = Color3.fromRGB(0, 0, 0)
-    button.TextSize = 20.000
-    button.TextWrapped = true
-
-    divider.Name = "divider"
-    divider.Parent = tab or Blatant
-    divider.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    divider.BackgroundTransparency = 0.500
-    divider.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    divider.BorderSizePixel = 0
-    divider.Position = UDim2.new(0, 0, 0.183333337, 0)
-    divider.Size = UDim2.new(0, 150, 0, 1)
-    divider.ZIndex = 2
-
-    return button
+	return tab
 end
 
---Code
-local plr = game.Players.LocalPlayer
-local character = plr.Character
-local hmd = character.Humanoid
+function createButton(tab, name, hover, typeee) -- Type: intab, custom
+	if typeee == "intab" then
+		local button = Instance.new("TextButton")
+		local divider = Instance.new("Frame")
 
-local oldSpeed = hmd.WalkSpeed
-local oldJumpPower = hmd.JumpPower
+		button.Name = "Button"
+		button.Parent = tab
+		button.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
+		button.BackgroundTransparency = 0.300
+		button.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		button.BorderSizePixel = 0
+		button.Size = UDim2.new(0, 160, 0, 30)
+		button.Font = Enum.Font.Arial
+		button.Text = name or "button"
+		button.TextColor3 = Color3.fromRGB(0, 0, 0)
+		button.TextSize = 20.000
+		button.TextWrapped = true
+
+		divider.Name = "divider"
+		divider.Parent = tab
+		divider.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		divider.BackgroundTransparency = 0.500
+		divider.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		divider.BorderSizePixel = 0
+		divider.Size = UDim2.new(0, 160, 0, 1)
+		divider.ZIndex = 2
+
+		return button
+
+	else
+		local button = Instance.new("TextButton")
+
+		button.Name = "Button"
+		button.Parent = tab
+		button.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
+		button.BackgroundTransparency = 0.300
+		button.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		button.BorderSizePixel = 0
+		button.Size = UDim2.new(0, 160, 0, 30)
+		button.Font = Enum.Font.Arial
+		button.Text = name or "button"
+		button.TextColor3 = Color3.fromRGB(0, 0, 0)
+		button.TextSize = 20.000
+		button.TextWrapped = true
+
+		return button
+	end
+end
+
+function bindable.OnInvoke(response)
+	if response == "no" then
+		return print'no'
+	else
+		print'yes'
+	end
+end
+
+--Code:
+
+local function isAlive(player, headCheck)
+	local Player = player or plr
+	if Player and Player.Character and ((Player.Character:FindFirstChildOfClass("Humanoid")) and (Player.Character:FindFirstChild("HumanoidRootPart"))) then
+		return true
+	else
+		return false
+	end
+end
+
+local Blatant = createTab(tabsFrame, "Blatant")
+local Render = createTab(tabsFrame, "Render")
+local Utility = createTab(tabsFrame, "Utility")
+--local Info = createTab(tabsFrame, "Info")
 
 --Blatant tab
+
+--[[
+    To do:
+    make noclip better
+    optimization in button code
+    add keyboard support for clickTP
+]]
+
+local clickTP = createButton(Blatant, "ClickTP")
+
+clickTP.MouseButton1Click:Connect(function()
+	if clickTP.BackgroundColor3 == Color3.fromRGB(255, 140, 120) then
+		clickTP.BackgroundColor3 = Color3.fromRGB(120, 255, 156)
+			if clickTPmode == "click" then
+				workspace.Gravity = gravity
+				mouseConnection = mouse.Button1Down:Connect(function()
+					if isAlive() and mouse.Target then 
+						plr.Character.HumanoidRootPart.CFrame = mouse.Hit + Vector3.new(0, 3, 0)
+					end
+				end)
+			elseif clickTPmode == "tool" then
+				local tool = Instance.new("Tool", plrpack)
+				tool.RequiresHandle = false
+				tool.Name = "TPTool"
+				tool.Activated:Connect(function()
+					if isAlive() then
+						plr.Character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.X ,mouse.Hit.Y + 3, mouse.Hit.Z)
+					end
+				end)
+			end
+	elseif clickTP.BackgroundColor3 == Color3.fromRGB(120, 255, 156) then
+		clickTP.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
+		if mouseConnection then 
+			mouseConnection:Disconnect()
+			mouseConnection = nil
+		end
+	end
+end)
+
+local gravity = createButton(Blatant, "Gravity")
+
+gravity.MouseButton1Click:Connect(function()
+	if gravity.BackgroundColor3 == Color3.fromRGB(255, 140, 120) then
+		gravity.BackgroundColor3 = Color3.fromRGB(120, 255, 156)
+		workspace.Gravity = gravity
+	elseif gravity.BackgroundColor3 == Color3.fromRGB(120, 255, 156) then
+		gravity.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
+		workspace.Gravity = 196.19999694824
+	end
+end)
 
 local noClip = createButton(Blatant, "NoClip")
 
 noClip.MouseButton1Click:Connect(function()
-    if noClip.BackgroundColor3 == Color3.fromRGB(255, 140, 120) then
-        noClip.BackgroundColor3 = Color3.fromRGB(120, 255, 156)
-        plr.Character.Humanoid:ChangeState(11)
-    elseif noClip.BackgroundColor3 == Color3.fromRGB(120, 255, 156) then
-        noClip.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
-        plr.Character.Humanoid:ChangeState(7)
-    end
+	if noClip.BackgroundColor3 == Color3.fromRGB(255, 140, 120) then
+		noClip.BackgroundColor3 = Color3.fromRGB(120, 255, 156)
+		plr.Character.Humanoid:ChangeState(11)
+	elseif noClip.BackgroundColor3 == Color3.fromRGB(120, 255, 156) then
+		noClip.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
+		plr.Character.Humanoid:ChangeState(5) --idk if it makes humanoid normal
+	end
 end)
 
 local speed = createButton(Blatant, "Speed")
 
 speed.MouseButton1Click:Connect(function()
-    if speed.BackgroundColor3 == Color3.fromRGB(255, 140, 120) then
-        speed.BackgroundColor3 = Color3.fromRGB(120, 255, 156)
-        plr.Character.Humanoid.WalkSpeed = speedValue or 100
-    elseif speed.BackgroundColor3 == Color3.fromRGB(120, 255, 156) then
-        speed.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
-        plr.Character.Humanoid.WalkSpeed = oldSpeed or 23
-    end
+	if speed.BackgroundColor3 == Color3.fromRGB(255, 140, 120) then
+		speed.BackgroundColor3 = Color3.fromRGB(120, 255, 156)
+		plr.Character.Humanoid.WalkSpeed = speedValue or 100
+	elseif speed.BackgroundColor3 == Color3.fromRGB(120, 255, 156) then
+		speed.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
+		plr.Character.Humanoid.WalkSpeed = oldSpeed or 23
+	end
 end)
 
 local jumpPower = createButton(Blatant, "JumpPower")
 
 jumpPower.MouseButton1Click:Connect(function()
-    if jumpPower.BackgroundColor3 == Color3.fromRGB(255, 140, 120) then
-        jumpPower.BackgroundColor3 = Color3.fromRGB(120, 255, 156)
-        plr.Character.Humanoid.JumpPower = jumpPowerValue or 100
-    elseif jumpPower.BackgroundColor3 == Color3.fromRGB(120, 255, 156) then
-        jumpPower.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
-        plr.Character.Humanoid.JumpPower = oldJumpPower or 50
-    end
+	if jumpPower.BackgroundColor3 == Color3.fromRGB(255, 140, 120) then
+		jumpPower.BackgroundColor3 = Color3.fromRGB(120, 255, 156)
+		plr.Character.Humanoid.JumpPower = jumpPowerValue or 100
+	elseif jumpPower.BackgroundColor3 == Color3.fromRGB(120, 255, 156) then
+		jumpPower.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
+		plr.Character.Humanoid.JumpPower = oldJumpPower or 50
+	end
+end)
+
+local hightJump = createButton(Blatant, "HightJump")
+
+hightJump.MouseButton1Click:Connect(function()
+	plr.Character.Humanoid:ChangeState("Jumping")
+	task.wait()
+	workspace.Gravity = 1
+	spawn(function()
+		for i = 1, 5 do
+			wait()
+			plr.Character.Humanoid:ChangeState("Jumping")
+		end
+	end)
+	spawn(function()
+		for i = 1, 5 / 28 do
+			task.wait(0.1)
+			plr.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
+			task.wait(0.1)
+			plr.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+		end
+	end)
+end)
+
+local infinityJump = createButton(Blatant, "InfinityJumps")
+
+infinityJump.MouseButton1Click:Connect(function()
+	if infinityJump.BackgroundColor3 == Color3.fromRGB(255, 140, 120) then
+		infinityJump.BackgroundColor3 = Color3.fromRGB(120, 255, 156)
+			input.JumpRequest:Connect(function()
+				if infinityJump.BackgroundColor3 == Color3.fromRGB(120, 255, 156) then
+					plr.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping") 
+				end
+			end)
+	elseif infinityJump.BackgroundColor3 == Color3.fromRGB(120, 255, 156) then
+		infinityJump.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
+		
+	end
 end)
 
 --Render tab
 
+local customCrossHair = createButton(Render, "CrossHair")
+
+customCrossHair.MouseButton1Click:Connect(function()
+	if customCrossHair.BackgroundColor3 == Color3.fromRGB(255, 140, 120) then
+		customCrossHair.BackgroundColor3 = Color3.fromRGB(120, 255, 156)
+		mouse.Icon = mouseIcon or "http://www.roblox.com/asset?id=163023520"
+	elseif customCrossHair.BackgroundColor3 == Color3.fromRGB(120, 255, 156) then
+		customCrossHair.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
+		mouse.Icon = "http://www.roblox.com/asset?id=163023520" or oldMouseIcon or ""
+	end
+end)
+
+local fovChanger = createButton(Render, "FovChanger")
+
+fovChanger.MouseButton1Click:Connect(function()
+	if fovChanger.BackgroundColor3 == Color3.fromRGB(255, 140, 120) then
+		fovChanger.BackgroundColor3 = Color3.fromRGB(120, 255, 156)
+		camera.FieldOfView = fov
+	elseif fovChanger.BackgroundColor3 == Color3.fromRGB(120, 255, 156) then
+		fovChanger.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
+		camera.FieldOfView = 70
+	end
+end)
+
+local noAnimate = createButton(Render, "DisableAnimation")
+
+noAnimate.MouseButton1Click:Connect(function()
+	if noAnimate.BackgroundColor3 == Color3.fromRGB(255, 140, 120) then
+		noAnimate.BackgroundColor3 = Color3.fromRGB(120, 255, 156)
+		animate.Disabled = true     
+	elseif noAnimate.BackgroundColor3 == Color3.fromRGB(120, 255, 156) then
+		noAnimate.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
+		animate.Disabled = false
+	end
+end)
+
+local dayTime = createButton(Render, "DayTime")
+
+dayTime.MouseButton1Click:Connect(function()
+	if dayTime.BackgroundColor3 == Color3.fromRGB(255, 140, 120) then
+		dayTime.BackgroundColor3 = Color3.fromRGB(120, 255, 156)
+		lighting.TimeOfDay = gameTime
+	elseif dayTime.BackgroundColor3 == Color3.fromRGB(120, 255, 156) then
+		dayTime.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
+		lighting.TimeOfDay = oldGameTime..":00:00" or "12:00:00"
+	end
+end)
+
 --Utility tab
 
---Info tab
+local cameraUnlock = createButton(Utility, "UnlockCamera")
+
+cameraUnlock.MouseButton1Click:Connect(function()
+	if cameraUnlock.BackgroundColor3 == Color3.fromRGB(255, 140, 120) then
+		cameraUnlock.BackgroundColor3 = Color3.fromRGB(120, 255, 156)
+		camera.CameraMaxZoomDistance = 1000000000
+	elseif cameraUnlock.BackgroundColor3 == Color3.fromRGB(120, 255, 156) then
+		cameraUnlock.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
+		camera.MaxAxisFieldOfView = oldCameraMaxZoom or 128
+	end
+end)
+
+local fpsUnlock = createButton(Utility, "FPS Unlocker")
+
+fpsUnlock.MouseButton1Click:Connect(function()
+	if setfpscap then
+		setfpscap(10000000)
+	end
+end)
+
+createNotification("ManaV1ForRoblox", "Successfully loaded!", 10)
