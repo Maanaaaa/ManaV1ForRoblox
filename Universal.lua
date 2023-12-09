@@ -372,18 +372,6 @@ end)
 
 --Utility tab
 
-local cameraUnlock = createButton(Utility, "UnlockCamera")
-
-cameraUnlock.MouseButton1Click:Connect(function()
-	if cameraUnlock.BackgroundColor3 == Color3.fromRGB(255, 140, 120) then
-		cameraUnlock.BackgroundColor3 = Color3.fromRGB(120, 255, 156)
-		camera.CameraMaxZoomDistance = 1000000000
-	elseif cameraUnlock.BackgroundColor3 == Color3.fromRGB(120, 255, 156) then
-		cameraUnlock.BackgroundColor3 = Color3.fromRGB(255, 140, 120)
-		camera.MaxAxisFieldOfView = oldCameraMaxZoom or 128
-	end
-end)
-
 local fpsUnlock = createButton(Utility, "FPS Unlocker")
 
 fpsUnlock.MouseButton1Click:Connect(function()
