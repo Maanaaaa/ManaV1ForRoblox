@@ -60,6 +60,7 @@ end
 
 if plrgui:FindFirstChild("Level2ExecLib") then
 	createNotification("ManaV1ForRoblox", "Already loaded, not loading again.", 15)
+	return
 end
 
 -- GuiLibrary
